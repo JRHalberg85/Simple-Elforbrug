@@ -1,0 +1,14 @@
+{
+  "domain": "eloverblik",
+  "name": "Simple Elforbrug",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "",
+  "requirements": [
+    "pyeloverblik==0.4.1"
+  ],
+  "dependencies": [],
+  "codeowners": [
+    "@JRHalberg85"
+  ]
+}
