@@ -71,6 +71,17 @@ class HassEloverblik:
         else:
             _LOGGER.warning("No day data available.")
             return None
+        
+    def get_usage_day(self, day, hour):
+        """Return the energy usage for a specific day and hour."""
+        if self._day_data:
+            try:
+                return round(self._day_data.get_metering_data(hour), 2)
+            except IndexError:
+                return 0
+        else:
+            _LOGGER.warning("No day data available.")
+            return None
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update_energy(self):
