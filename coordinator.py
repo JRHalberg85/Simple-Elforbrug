@@ -67,12 +67,12 @@ class SensorCoordinator:
             self._state = sum(valid_hourly_data[:current_hour + 1]) if valid_hourly_data else 0
 
             self._extra_state_attributes = {
-                'Daily Usage': self._state,
+                'Daily Usage': f"{self._state} {self.unit_of_measurement}",
                 'Metering Point': self._data.get_metering_point(),
                 'Metering date': self._data_date,
             }
             _LOGGER.debug(f"Updated daily state: {self._state}, attributes: {self._extra_state_attributes}")
-           
+          
         elif self._sensor_type == 'monthly':
             hourly_data = [self._data.get_usage_hour(hour) for hour in range(24)]
             
@@ -83,7 +83,7 @@ class SensorCoordinator:
 
             self._state = total_monthly_usage
             self._extra_state_attributes = {
-                'Monthly Usage': self._state,
+                'Monthly Usage': f"{self._state} {self.unit_of_measurement}",
                 'Metering Point': self._data.get_metering_point(),
                 'Metering Month': datetime.now().strftime('%B %Y'),
             }
@@ -92,7 +92,7 @@ class SensorCoordinator:
         elif self._sensor_type == 'total':
             self._state = self._data.get_total_year() or 0
             self._extra_state_attributes = {
-                'Yearly Consumption': self._state,
+                'Yearly Consumption': f"{self._state} {self.unit_of_measurement}",
                 'Metering Point': self._data.get_metering_point(),
                 'Metering date': self._data_date,
             }
