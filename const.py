@@ -54,6 +54,6 @@ SENSOR_DATA_SCHEMA = (
         name="Simple Elforbrug Total",
         entity_registry_enabled_default=True,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:chart-bar",
+        icon="mdi:calendar-multiple-check",
     )
 )
