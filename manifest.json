@@ -3,7 +3,7 @@
   "name": "Simple Elforbrug",
   "version": "1.0.0",
   "config_flow": true,
-  "documentation": "",
+  "documentation": "https://github.com/JRHalberg85/Simple-Elforbrug",
   "requirements": [
     "pyeloverblik==0.4.1"
   ],
