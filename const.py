@@ -41,17 +41,17 @@ SENSOR_DATA_SCHEMA = (
         icon="mdi:calendar-today",
     ),
     SensorType(
-    key="monthly",
-    name="Simple Elforbrug Monthly",
-    entity_registry_enabled_default=True,
-    native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-    icon="mdi:calendar-month",
-),
+        key="monthly",
+        name="Simple Elforbrug Monthly",
+        entity_registry_enabled_default=True,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        icon="mdi:calendar-month",
+    ),
     SensorType(
         key="total",
         name="Simple Elforbrug Total",
         entity_registry_enabled_default=True,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:chart-bar",
+        icon="mdi:calendar-multiple-check",
     )
 )
