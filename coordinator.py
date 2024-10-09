@@ -67,23 +67,22 @@ class SensorCoordinator:
             self._state = sum(valid_hourly_data[:current_hour + 1]) if valid_hourly_data else 0
 
             self._extra_state_attributes = {
-                'Daily Usage': f"{self._state} {self.unit_of_measurement}",
+                'Daily Usage': self._state,
                 'Metering Point': self._data.get_metering_point(),
                 'Metering date': self._data_date,
             }
             _LOGGER.debug(f"Updated daily state: {self._state}, attributes: {self._extra_state_attributes}")
           
         elif self._sensor_type == 'monthly':
-            hourly_data = [self._data.get_usage_hour(hour) for hour in range(24)]
-            
+            current_day = datetime.now().day
             total_monthly_usage = 0
-            for day in range(1, 32):  
-                daily_usage = sum(self._data.get_usage_day(day, hour) for hour in range(24) if self._data.get_usage_day(day, hour) is not None)
+            for day in range(1, current_day + 1):  
+                daily_usage = sum(self._data.get_usage_day(day, h) for h in range(24) if self._data.get_usage_day(day, h) is not None)
                 total_monthly_usage += daily_usage
 
             self._state = total_monthly_usage
             self._extra_state_attributes = {
-                'Monthly Usage': f"{self._state} {self.unit_of_measurement}",
+                'Monthly Usage': self._state,
                 'Metering Point': self._data.get_metering_point(),
                 'Metering Month': datetime.now().strftime('%B %Y'),
             }
@@ -92,11 +91,11 @@ class SensorCoordinator:
         elif self._sensor_type == 'total':
             self._state = self._data.get_total_year() or 0
             self._extra_state_attributes = {
-                'Yearly Consumption': f"{self._state} {self.unit_of_measurement}",
+                'Yearly Consumption': self._state,
                 'Metering Point': self._data.get_metering_point(),
                 'Metering date': self._data_date,
             }
-            _LOGGER.debug(f"Updated total state: {self._state}, attributes: {self._extra_state_attributes}")
+            _LOGGER.debug(f"Updated total state: {self._state}, attributes: {self._extra_state_attributes}") 
 
         else:
             raise ValueError(f"Unexpected sensor_type: {self._sensor_type}.")

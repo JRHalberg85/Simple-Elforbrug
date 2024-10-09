@@ -2,6 +2,7 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+
 from .const import DOMAIN, SENSOR_DATA_SCHEMA
 from .coordinator import SensorCoordinator
 
@@ -28,7 +29,6 @@ async def async_setup_entry(
     ]
 
     async_add_entities(sensors)
-
 
 #############################################################################
 # Simple Elforbrug Sensors

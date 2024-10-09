@@ -5,7 +5,6 @@ from homeassistant.const import UnitOfEnergy
 
 import voluptuous as vol
 import logging
-
 _LOGGER = logging.getLogger(__name__)
 
 ###############################################################################
@@ -19,11 +18,11 @@ CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 DATA_SCHEMA = vol.Schema({
     vol.Required("refresh_token", description="Token"): str,
     vol.Required("metering_point", description="Metering Point"): str,
-    vol.Optional("unit_of_measurement", default=UnitOfEnergy.KILO_WATT_HOUR): vol.In([UnitOfEnergy.KILO_WATT_HOUR, UnitOfEnergy.MEGA_WATT_HOUR])
+    vol.Required("unit_of_measurement", description="Unit of Measurement"): vol.In(["kWh", "MWh"])
 })
 
 ###############################################################################
-# SENSOR DESIGN SCHEMA
+
 @dataclass
 class SensorType:
     key: str
@@ -31,6 +30,9 @@ class SensorType:
     entity_registry_enabled_default: bool
     native_unit_of_measurement: str
     icon: str
+
+###############################################################################
+# SENSOR DESIGN SCHEMA
 
 SENSOR_DATA_SCHEMA = (
     SensorType(
@@ -52,6 +54,6 @@ SENSOR_DATA_SCHEMA = (
         name="Simple Elforbrug Total",
         entity_registry_enabled_default=True,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:calendar-multiple-check",
+        icon="mdi:chart-bar",
     )
 )

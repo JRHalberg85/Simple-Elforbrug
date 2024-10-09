@@ -1,10 +1,8 @@
 """Simple Elforbrug init-file."""
 import asyncio
 import logging
-#import json
-#from datetime import timedelta
 import requests
-#import voluptuous as vol
+
 from homeassistant.util import Throttle
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -25,11 +23,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     metering_point = entry.data['metering_point']
     
     hass.data[DOMAIN][entry.entry_id] = HassEloverblik(refresh_token, metering_point)
-
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    
+    # Skift til async_forward_entry_setups
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
@@ -109,6 +105,6 @@ class HassEloverblik:
         else:
             _LOGGER.warning("No day data available.")
             return None
-
+        
     def get_metering_point(self):
         return self._metering_point
