@@ -4,11 +4,7 @@
   "version": "1.0.0",
   "config_flow": true,
   "documentation": "",
-  "requirements": [
-    "pyeloverblik==0.4.1"
-  ],
+  "requirements": ["pyeloverblik==0.4.1"],
   "dependencies": [],
-  "codeowners": [
-    "@JRHalberg85"
-  ]
+  "codeowners": ["@JRHalberg85"]
 }
