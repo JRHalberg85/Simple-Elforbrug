@@ -1,11 +1,11 @@
 """Simpelt Elforbrug sensorer"""
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, SENSOR_DATA_SCHEMA
 from .coordinator import SensorCoordinator
-
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -33,12 +33,19 @@ async def async_setup_entry(
 #############################################################################
 # Simple Elforbrug Sensors
 
-class Elforbrug(Entity):
+class Elforbrug(RestoreEntity):
     """Representation of an energy sensor."""
 
     def __init__(self, sensor_type, client):
         """Initialize the sensor."""
         self.coordinator = SensorCoordinator(sensor_type, client)
+        self._state = None
+
+    async def async_added_to_hass(self):
+        """Restore last state on startup."""
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self._state = last_state.state
 
     @property
     def name(self):
@@ -53,7 +60,7 @@ class Elforbrug(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self.coordinator.state
+        return self._state or self.coordinator.state
 
     @property
     def extra_state_attributes(self):
@@ -73,3 +80,4 @@ class Elforbrug(Entity):
     def update(self):
         """Update the sensor's state."""
         self.coordinator.update()
+        self._state = self.coordinator.state
