@@ -11,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 # NESSESARY SETTINGS FOR FUNCTIONS
 
 DEFAULT_NAME = "Simple Elforrug"
-DOMAIN = "eloverblik"
+DOMAIN = "simple_elforbrug"
 PLATFORMS = ["sensor"]
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=60)
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)

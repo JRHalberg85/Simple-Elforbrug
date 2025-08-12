@@ -36,13 +36,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=info["title"], data=user_input)
             except InvalidMeteringPoint:
                 errors["base"] = "invalid_metering_point"
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
             except Exception as e:
                 _LOGGER.error(f"Unexpected error: {str(e)}")
                 errors["base"] = "unknown_error"
+            except InvalidMeteringPoint:
+                errors["base"] = "invalid_metering_point"
+            except Exception as e:
+                _LOGGER.error(f"Unexpected error: {str(e)}")
                 
         return self.async_show_form(
             step_id="user", 
@@ -52,3 +52,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class InvalidMeteringPoint(exceptions.HomeAssistantError):
     """Error to indicate the metering point is invalid."""
+
+class CannotConnect(exceptions.HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+class InvalidAuth(exceptions.HomeAssistantError):
+    """Error to indicate there is invalid auth."""

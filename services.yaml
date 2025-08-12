@@ -1,0 +1,3 @@
+update_energy:
+  name: "Opdater Simple Elforbrug"
+  description: "Henter data manuelt fra Eloverblik API"

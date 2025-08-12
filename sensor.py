@@ -10,7 +10,6 @@ from .coordinator import SensorCoordinator
 import logging
 _LOGGER = logging.getLogger(__name__)
 
-###############################################################################
 # Async setup for Elforbrug Sensors
 
 async def async_setup_entry(
@@ -42,10 +41,12 @@ class Elforbrug(RestoreEntity):
         self._state = None
 
     async def async_added_to_hass(self):
-        """Restore last state on startup."""
+        """Restore last state on startup and load history attributes to coordinator."""
         last_state = await self.async_get_last_state()
         if last_state:
+            # restore main state
             self._state = last_state.state
+            
 
     @property
     def name(self):
