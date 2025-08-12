@@ -30,7 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     eloverblik_instance = HassEloverblik(refresh_token, metering_point)
     hass.data[DOMAIN][entry.entry_id] = eloverblik_instance
 
-    # (valgfri) registrer service til manuel opdatering hvis du vil
+    # Service
     async def handle_manual_update(call: ServiceCall):
         _LOGGER.info("🔄 Manuel opdatering af Eloverblik-data startet via servicecall")
         await hass.async_add_executor_job(eloverblik_instance.update_energy)
@@ -63,8 +63,8 @@ class HassEloverblik:
         self._client = Eloverblik(refresh_token)
         self._metering_point = metering_point
 
-        self._day_data = None        # TimeSeries for seneste dag (bruges af get_usage_hour)
-        self._week_data = {}        # Dict med "1 days ago".."7 days ago"
+        self._day_data = None
+        self._week_data = {}
         self._year_data = None
 
 
@@ -122,18 +122,10 @@ class HassEloverblik:
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update_energy(self):
-        """
-        Henter:
-         - time-serier (siste ~8 dage) via get_time_series og parse'r det til daglige summer
-         - måned/års-data som før
-        Gemmer:
-         - self._day_data = nyeste TimeSeries (så get_usage_hour virker)
-         - self._week_data = {'1 days ago': x.xx, ... '7 days ago': None/val}
-        """
+
         try:
             _LOGGER.debug("Starter update_energy for metering point %s", self._metering_point)
 
-            # --- HENT TIME-SERIE FOR OP TIL 8 DAGE (hour resolution)
             raw = self._client.get_time_series(
                 self._metering_point,
                 from_date=datetime.now() - timedelta(days=8),
@@ -144,12 +136,11 @@ class HassEloverblik:
             if raw.status == 200:
                 try:
                     json_response = json.loads(raw.body)
-                    parsed = self._client._parse_result(json_response)  # dict: {datetime: TimeSeries}
+                    parsed = self._client._parse_result(json_response)
                 except Exception as e:
                     _LOGGER.exception("Kunne ikke parse time-series JSON: %s", e)
                     parsed = {}
 
-                # Konverter parsed-keys til date -> TimeSeries for nem matching
                 date_map = {}
                 for k, ts in parsed.items():
                     if isinstance(k, datetime):
@@ -159,12 +150,9 @@ class HassEloverblik:
                     _LOGGER.debug("Ingen daglige time-serier fundet i API-respons.")
                     self._week_data = {}
                 else:
-                    # Find seneste dato (nyeste TimeSeries)
                     last_date = max(date_map.keys())
-                    # Sæt self._day_data til den nyeste dag (kompatibilitet med get_usage_hour)
                     self._day_data = date_map.get(last_date)
 
-                    # Byg self._week_data med 1..7 days ago
                     wd = {}
                     for i in range(1, 8):  # 1..7
                         target = last_date - timedelta(days=i)
@@ -174,7 +162,6 @@ class HassEloverblik:
                             _LOGGER.debug("Ingen data for %s (target=%s)", f"{i} days ago", target.isoformat())
                             continue
 
-                        # Summer 24 positioner (position 1..24) ved at bruge get_metering_data
                         day_sum = 0.0
                         for h in range(24):
                             try:
@@ -195,7 +182,6 @@ class HassEloverblik:
                 _LOGGER.warning("Error from Eloverblik when getting time series: %s - %s", raw.status, getattr(raw, "body", None))
                 self._week_data = {}
 
-            # --- HENT ÅRSDATA / MÅNEDS-DATA som før
             year_data = self._client.get_per_month(self._metering_point)
             if year_data.status == 200:
                 self._year_data = year_data

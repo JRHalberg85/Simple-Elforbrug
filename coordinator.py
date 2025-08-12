@@ -52,7 +52,7 @@ class SensorCoordinator:
 
     def update(self):
         """Update the sensor's state and attributes."""
-        # Hent/refresh data fra klient (blokkerende call — din sensor kalder dette i worker)
+
         self._data.update_energy()
         self._data_date = self._data.get_data_date()
 
@@ -72,7 +72,7 @@ class SensorCoordinator:
 
             # Tilføj uge-historik hvis tilgængelig (fra HassEloverblik.update_energy)
             if hasattr(self._data, "_week_data") and self._data._week_data:
-                # _week_data indeholder nøgler "1 days ago", "2 days ago", ...
+
                 attrs.update(self._data._week_data)
 
             self._extra_state_attributes = attrs
