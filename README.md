@@ -41,7 +41,7 @@ Link: [Eloverblik.dk](https://www.eloverblik.dk)
 ## INSTALLATION
 
 1. Download Simple-Elforbrug
-2. Placer filerne i config/custom_component/simple-elforbrug...
+2. Placer filerne i config/custom_component/simple_elforbrug...
 3. Genstart Home Assistant
 4. Instillinger -> Enheder & tjenester -> + Tilføj integration
 5. Søg Simple Elforbrug og følg guiden.
