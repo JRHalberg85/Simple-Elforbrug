@@ -47,6 +47,12 @@ Link: [Eloverblik.dk](https://www.eloverblik.dk)
 5. Søg Simple Elforbrug og følg guiden.
 6. ENJOY!
 
+## Actions.
+
+ - set_unit: Skifter mellem kWh og MWh
+ - update_energy: Opdater manuelt eller via automation hvis der ønsker oftere opdateringer. Standard er 1 times opdaterings interval
+
+
 ### Authors
 Contributors names and contact info
 
