@@ -20,6 +20,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data[DOMAIN] = {}
     return True
 
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Eloverblik from a config entry."""
     refresh_token = entry.data["refresh_token"]
@@ -33,7 +34,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
     hass.data[DOMAIN][entry.entry_id] = eloverblik_instance
 
+    #
     # Service: Manuel opdatering
+    #
     async def handle_manual_update(call: ServiceCall):
         _LOGGER.info("🔄 Manuel opdatering af Eloverblik-data startet via servicecall")
         await hass.async_add_executor_job(eloverblik_instance.update_energy)
@@ -41,21 +44,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.services.async_register(DOMAIN, "update_energy", handle_manual_update)
 
-    # Service: Skift enhed (kWh / MWh)
+    #
+    # Service: Skift enhed (kWh / MWh) og gem i config_entry
+    #
     async def handle_set_unit(call: ServiceCall):
-        unit = call.data.get("unit")
-        if unit not in ["kWh", "MWh"]:
-            _LOGGER.error("❌ Ugyldig enhed: %s. Tilladte værdier er 'kWh' eller 'MWh'", unit)
+        new_unit = call.data.get("unit")
+        if not new_unit or str(new_unit).lower() not in ["kwh", "mwh"]:
+            _LOGGER.error("Ugyldig enhed: %s (brug 'kWh' eller 'MWh')", new_unit)
             return
-        eloverblik_instance.unit_of_measurement = unit
-        _LOGGER.info("✅ Enhed ændret til: %s", unit)
-        # Opdater data straks
+
+        # Ændr i hukommelsen
+        eloverblik_instance.unit_of_measurement = new_unit
+        _LOGGER.info("⚙️ Enhed ændret til %s i hukommelsen", new_unit)
+
+        # Gem permanent i config entry
+        new_data = dict(entry.data)
+        new_data["unit_of_measurement"] = new_unit
+        hass.config_entries.async_update_entry(entry, data=new_data)
+        _LOGGER.info("💾 Enhed gemt permanent i config_entry: %s", new_unit)
+
+        # Opdater sensorer direkte efter ændringen
         await hass.async_add_executor_job(eloverblik_instance.update_energy)
 
     hass.services.async_register(DOMAIN, "set_unit", handle_set_unit)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
@@ -99,7 +114,7 @@ class HassEloverblik:
             return round(value / 1000.0, 3)
         return round(value, 3)
 
-    # ---------- Offentlige “getter” metoder (returnerer KWh rå, undtagen week der konverteres samlet) ----------
+    # ---------- Offentlige “getter” metoder ----------
 
     def get_usage_hour(self, hour):
         """Rå timeværdi i kWh (3 dec). Ingen konvertering her."""
@@ -115,7 +130,7 @@ class HassEloverblik:
         return None
 
     def get_usage_day(self, day, hour):
-        """Rå timeværdi i kWh (samme som get_usage_hour; 'day' er ikke i brug)."""
+        """Samme som get_usage_hour; 'day' bruges ikke i API-data."""
         return self.get_usage_hour(hour)
 
     def get_total_year(self):
@@ -137,14 +152,8 @@ class HassEloverblik:
         return self._metering_point
 
     def get_week_data(self):
-        """
-        Returnér uge-opsummering i VALGT enhed (konverter først her).
-        Internt ligger `_week_data` altid i kWh.
-        """
-        out = {}
-        for k, v in self._week_data.items():
-            out[k] = self._convert(v) if isinstance(v, (int, float)) else v
-        return out
+        """Returnér uge-opsummering i VALGT enhed."""
+        return {k: self._convert(v) if isinstance(v, (int, float)) else v for k, v in self._week_data.items()}
 
     # ---------- Hent/byg data (kører i kWh) ----------
 
@@ -169,11 +178,7 @@ class HassEloverblik:
                     _LOGGER.exception("Kunne ikke parse time-series JSON: %s", e)
                     parsed = {}
 
-                # Map dato -> timeserieobjekt
-                date_map = {}
-                for k, ts in parsed.items():
-                    if isinstance(k, datetime):
-                        date_map[k.date()] = ts
+                date_map = {k.date(): ts for k, ts in parsed.items() if isinstance(k, datetime)}
 
                 if not date_map:
                     _LOGGER.debug("Ingen daglige time-serier fundet i API-respons.")
@@ -182,42 +187,18 @@ class HassEloverblik:
                     last_date = max(date_map.keys())
                     self._day_data = date_map.get(last_date)
 
-                    # Byg 7 dages historik (RÅ KWH!)
                     wd = {}
                     for i in range(1, 8):
                         target = last_date - timedelta(days=i)
                         ts = date_map.get(target)
                         if ts is None:
                             wd[f"{i} days ago"] = None
-                            _LOGGER.debug("Ingen data for %s (target=%s)", f"{i} days ago", target.isoformat())
                             continue
 
-                        day_sum = 0.0
-                        for h in range(24):
-                            try:
-                                val = ts.get_metering_data(h)
-                            except Exception:
-                                val = None
-                            if val is None:
-                                continue
-                            day_sum += float(val)
-
-                        # Gem ALTID i kWh (rå); konverter først ved udlæsning
+                        day_sum = sum(float(ts.get_metering_data(h) or 0) for h in range(24))
                         wd[f"{i} days ago"] = round(day_sum, 3)
 
-                        # Log både kWh og valgt enhed for gennemsigtighed
-                        _LOGGER.debug(
-                            "📅 Forbrug %s: %.3f kWh (%.3f %s) på dato %s",
-                            f"{i} days ago",
-                            round(day_sum, 3),
-                            self._convert(day_sum),
-                            self.unit_of_measurement,
-                            target.isoformat(),
-                        )
-
                     self._week_data = wd
-
-                _LOGGER.debug("Uge-data keys: %s", list(self._week_data.keys()))
 
             else:
                 _LOGGER.warning(
@@ -227,16 +208,10 @@ class HassEloverblik:
                 )
                 self._week_data = {}
 
-            # Årsdata (objekt; total fås i kWh via get_total_year)
+            # Årsdata
             year_data = self._client.get_per_month(self._metering_point)
             if year_data.status == 200:
                 self._year_data = year_data
-                _LOGGER.debug(
-                    "✅ Årsdata hentet. Total år: %.3f kWh (%.3f %s)",
-                    self._year_data.get_total_metering_data() if self._year_data else 0.0,
-                    self._convert(self._year_data.get_total_metering_data() if self._year_data else 0.0),
-                    self.unit_of_measurement,
-                )
             else:
                 _LOGGER.warning(
                     "Error from Eloverblik when getting year data: %s - %s",
