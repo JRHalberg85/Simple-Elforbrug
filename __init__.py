@@ -10,7 +10,7 @@ from homeassistant.util import Throttle
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 
-from .pyeloverblik.eloverblik import Eloverblik
+from pyeloverblik.eloverblik import Eloverblik
 from .const import DOMAIN, MIN_TIME_BETWEEN_UPDATES, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
