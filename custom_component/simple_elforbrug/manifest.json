@@ -1,0 +1,10 @@
+{
+  "domain": "simple_elforbrug",
+  "name": "Simple Elforbrug",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "",
+  "requirements": ["pyeloverblik"],
+  "codeowners": ["@JRHalberg85"]
+}
+
