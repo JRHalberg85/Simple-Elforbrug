@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "config_flow": true,
   "documentation": "",
+  "issue_tracker": ["https://github.com/JRHalberg85/simple_elforbrug/issues"],
   "requirements": ["pyeloverblik"],
   "codeowners": ["@JRHalberg85"]
 }
