@@ -1,7 +1,5 @@
 {
   "name": "Simple Elforbrug",
-  "homeassistant": "2024.9.0",
-  "hacs": "2.0.0",
   "country": ["DK"],
   "render_readme": true
 }
