@@ -1,7 +1,7 @@
 # Simple Elforbrug 
 custom_component for Home Assistant.
 
-## Opretter forbindelse til Eloverblik API og henter data om ens elforbrug.
+## Opretter forbindelse til Eloverblik API og henter data omkring dit elforbrug.
 
 Opretter 3 sensor. 
 ```
