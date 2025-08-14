@@ -5,7 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, SENSOR_DATA_SCHEMA
-from .coordinator import SensorCoordinator
+from .coordinator import SensorCoordinator, TariffCoordinator
 
 import logging
 _LOGGER = logging.getLogger(__name__)
@@ -14,9 +14,12 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry, async_add_entities):
     """Set up the sensor platform."""
     eloverblik = hass.data[DOMAIN][config.entry_id]
+    tariff_instance = hass.data[DOMAIN][f"{config.entry_id}_tariff"]
     sensors = [Elforbrug(sensor.key, eloverblik) for sensor in SENSOR_DATA_SCHEMA]
     async_add_entities(sensors)
 
+    sensors.append(TariffSensor(TariffCoordinator(tariff_instance)))
+    async_add_entities(sensors)
 
 class Elforbrug(RestoreEntity):
     """Representation of an energy sensor."""
@@ -46,6 +49,48 @@ class Elforbrug(RestoreEntity):
     @property
     def state(self):
         return round(self._state or self.coordinator.state, 3)
+
+    @property
+    def extra_state_attributes(self):
+        return self.coordinator.extra_state_attributes
+
+    @property
+    def unit_of_measurement(self):
+        return self.coordinator.unit_of_measurement
+
+    @property
+    def icon(self):
+        return self.coordinator.icon
+
+    def update(self):
+        self.coordinator.update()
+        self._state = self.coordinator.state
+        
+        
+        
+class TariffSensor(RestoreEntity):
+    """Sensor for el-tariffer."""
+
+    def __init__(self, coordinator):
+        self.coordinator = coordinator
+        self._state = None
+
+    async def async_added_to_hass(self):
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self._state = last_state.state
+
+    @property
+    def name(self):
+        return self.coordinator.name
+
+    @property
+    def unique_id(self):
+        return self.coordinator.unique_id
+
+    @property
+    def state(self):
+        return self._state or self.coordinator.state
 
     @property
     def extra_state_attributes(self):

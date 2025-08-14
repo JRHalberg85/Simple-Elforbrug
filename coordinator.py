@@ -140,3 +140,42 @@ class SensorCoordinator:
 
         else:
             raise ValueError(f"Unexpected sensor_type: {self._sensor_type}.")
+        
+        
+        
+class TariffCoordinator:
+    """Coordinator for tariff-sensoren."""
+
+    def __init__(self, tariff_client):
+        self._client = tariff_client
+        self._state = None
+        self._attributes = {}
+
+    @property
+    def name(self):
+        return "Simple Elforbrug Tariff"
+
+    @property
+    def unique_id(self):
+        return f"tariff-{self._client._metering_point}"
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def extra_state_attributes(self):
+        return self._attributes
+
+    @property
+    def unit_of_measurement(self):
+        return "kr/kWh"
+
+    @property
+    def icon(self):
+        return "mdi:cash"
+
+    def update(self):
+        self._client.update_tariff()
+        self._state = self._client.get_today_tariff()
+        self._attributes = self._client.get_all_tariffs()

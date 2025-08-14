@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 
 from pyeloverblik.eloverblik import Eloverblik
 from .const import DOMAIN, MIN_TIME_BETWEEN_UPDATES, PLATFORMS
+from .tariffs import HassTariff
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         unit_of_measurement=unit_of_measurement,
     )
     hass.data[DOMAIN][entry.entry_id] = eloverblik_instance
+
+    tariff_instance = HassTariff(refresh_token, metering_point)
+    hass.data[DOMAIN][f"{entry.entry_id}_tariff"] = tariff_instance
 
     #
     # Service: Manuel opdatering
