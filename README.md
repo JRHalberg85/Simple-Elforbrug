@@ -54,7 +54,7 @@ Link: [Eloverblik.dk](https://www.eloverblik.dk)
 
 ## Example i Custom:button-card
 Der er mulighed for at undgå at bruge apexcharts-card og bare "nøjes" med custom:button-card og dermed have MANGE flere muligheder for at lave et custom design:
-Her er et hurtigt eksempel i et søjle diagram.
+Her er et hurtigt eksempel med forbrug i et søjle diagram.
 
 ```
 type: custom:button-card
@@ -144,7 +144,115 @@ custom_fields:
       `;
     ]]]
 ```
-<img width="510" height="205" alt="Skærmbillede 14-08-2025 kl  08 11 57 AM" src="https://github.com/user-attachments/assets/a8c18e89-a367-404f-830c-3d723c261c0b" />
+<img width="500" height="200" alt="Skærmbillede 14-08-2025 kl  08 11 57 AM" src="https://github.com/user-attachments/assets/a8c18e89-a367-404f-830c-3d723c261c0b" />
+
+
+
+Og et med tariffs:
+
+```
+type: custom:button-card
+entity: sensor.simple_elforbrug_tariff
+name: Elforbrug Tariffs
+show_state: true
+show_icon: false
+show_name: true
+styles:
+  grid:
+    - grid-template-areas: |
+        "n s"
+        "chart chart"
+        "chart_names chart_names"
+    - grid-template-columns: auto
+    - grid-template-rows: 10px 130px auto
+  card:
+    - height: 200px
+    - width: 400px
+    - padding: 10px
+  name:
+    - font-size: 14px
+    - justify-self: start
+    - align-self: center
+  state:
+    - font-size: 14px
+    - justify-self: end
+    - align-self: center
+  custom_fields:
+    chart:
+      - display: flex
+      - align-items: flex-end
+      - height: 130px
+    chart_names:
+      - display: flex
+      - align-items: center
+      - height: 40px
+custom_fields:
+  chart: |
+    [[[
+      const values = entity.attributes['Tariff i dag'];
+      const maxVal = Math.max(...values);
+
+      if (!values || values.length === 0) return "";
+
+      const bars = values.map((v, i) => {
+        const height = (v / maxVal) * 100;
+        const color = v > 0.4 ? '#ff6347' : v > 0.2 ? '#ffb446' : '#2ecc71';
+        
+        return `
+          <div style="
+            flex: 1;
+            height: ${height}%;
+            background-color: ${color};
+            border-radius: 4px 4px 0px 0px;
+            margin: 0 1px;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
+          " title="${Number(v).toFixed(3)} kr/kWh"></div>
+        `;
+      }).join('');
+
+      return `
+        <div style="
+          display: flex;
+          align-items: flex-end;
+          height: 100px;
+          width: 100%;
+        ">
+          ${bars}
+        </div>
+      `;
+    ]]]
+  chart_names: |
+    [[[
+      const labels = [
+        "00", "01", "02", "03", "04", "05", "06",
+        "07", "08", "09", "10", "11", "12", "13",
+        "14", "15", "16", "17", "18", "19", "20",
+        "21", "22", "23"
+      ];
+
+      return `
+        <div style="
+          display: flex;
+          width: 100%;
+          font-size: 10px;
+          color: white;
+        ">
+          ${labels.map(l => `
+            <div style="
+              flex: 1;
+              text-align: center;
+              transform: rotate(270deg);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              
+            ">${l}</div>
+          `).join('')}
+        </div>
+      `;
+    ]]]
+```
+<img width="408" height="205" alt="Skærmbillede 14-08-2025 kl  11 43 25 AM" src="https://github.com/user-attachments/assets/f521adbe-41dc-4e08-bbde-32924ad4d8ff" />
 
 
 
